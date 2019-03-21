@@ -18,7 +18,7 @@ public class DepoimentoValidator implements Validator {
 	@Override
 	/**
 	 * recebe a classe do objeto que está querendo ser validado e retorna se o
-	 * validador consegue lidar com ele
+	 * validador consegue lidar com os objetos dessa classe
 	 */
 	public boolean supports(Class<?> clazz) {
 		return Depoimento.class.isAssignableFrom(clazz);

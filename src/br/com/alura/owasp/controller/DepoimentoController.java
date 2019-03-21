@@ -2,10 +2,15 @@ package br.com.alura.owasp.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import br.com.alura.owasp.dao.DepoimentoDao;
 import br.com.alura.owasp.model.Depoimento;
+import br.com.alura.owasp.validator.DepoimentoValidator;
 
 @Controller
 @Transactional
@@ -28,10 +34,19 @@ public class DepoimentoController {
 	}
 
 	@RequestMapping(value = "/enviaMensagem", method = RequestMethod.POST)
-	public String enviaMensagem(
-			@ModelAttribute(value = "depoimentos") Depoimento depoimento,
-			RedirectAttributes redirect, Model model) {
+	public String enviaMensagem(@Valid @ModelAttribute(value = "depoimentos") Depoimento depoimento, // @Valid para
+																										// indicar o
+																										// processo do
+																										// disparo de
+																										// validação
+			BindingResult result, RedirectAttributes redirect, Model model) {
 		chamaPostsDoBanco(model);
+
+		// Se tivermos erro, retornar p/ a jsp depoimento para que a mensagem de erro
+		// seja visualizada pelo usuário
+		if (result.hasErrors()) {
+			return "depoimento";
+		}
 
 		dao.salvaDepoimento(depoimento);
 		return "redirect:/depoimento";
@@ -42,6 +57,12 @@ public class DepoimentoController {
 		model.addAttribute(depoimento);
 		List<Depoimento> mensagens = dao.buscaMensagens();
 		model.addAttribute("lista", mensagens);
+	}
+
+	@InitBinder
+	public void InitBinder(WebDataBinder binder) {// validação do Depoimento enviado pelo usuário de acordo com a classe
+													// DepoimentoValidator
+		binder.setValidator(new DepoimentoValidator());
 	}
 
 }
